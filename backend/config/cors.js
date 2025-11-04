@@ -9,6 +9,7 @@ const corsOptions = {
     // List of allowed origins
     const allowedOrigins = [
       config.FRONTEND_URL,
+      'https://mernproject-blond.vercel.app',
       'http://localhost:5173',
       'http://localhost:3001',
       'http://127.0.0.1:3000',
