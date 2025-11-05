@@ -14,7 +14,11 @@ const orderSchema = new mongoose.Schema({
   orderNumber: { type: String, unique: true, index: true },
   items: { type: [orderLineSchema], required: true },
   totals: { type: Number, required: true },
-  status: { type: String, enum: ["placed","preparing","ready","served","canceled"], default: "placed" },
+  status: {
+  type: String,
+  enum: ['placed', 'preparing', 'ready', 'served', 'canceled', 'completed'],
+  default: 'placed'
+},
   payment: {
     method: { type: String },
     provider: { type: String },

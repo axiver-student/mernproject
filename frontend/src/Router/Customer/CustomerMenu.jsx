@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { addToCart } from '../../store/slices/cartSlice'
+import { addToCart, setTableToken } from '../../store/slices/cartSlice'
 import {
   fetchMenuItems,
   fetchCategories,
@@ -42,6 +42,12 @@ const CustomerMenu = () => {
         }
 
         setTable(tableData)
+        // Persist table token (use the table's _id so backend can accept as tableId)
+        try {
+          dispatch(setTableToken(tableData._id))
+        } catch (err) {
+          console.warn('Failed to set table token in store', err)
+        }
         setTableError(null)
       } catch (err) {
         console.error('Error fetching table:', err)

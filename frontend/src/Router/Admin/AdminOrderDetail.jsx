@@ -14,6 +14,7 @@ const AdminOrderDetail = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [updating, setUpdating] = useState(false)
+  const [paymentStatus, setPaymentStatus] = useState('pending')
 
   const fetchOrder = async () => {
     if (!orderId) {
@@ -26,6 +27,7 @@ const AdminOrderDetail = () => {
       setLoading(true)
       const data = await orderService.getOrder(orderId, token)
       setOrder(data)
+      setPaymentStatus(data.payment?.status || 'pending')
       setError(null)
     } catch (err) {
       console.error('Error fetching order:', err)
@@ -44,7 +46,6 @@ const AdminOrderDetail = () => {
     try {
       setUpdating(true)
       await orderService.updateOrderStatus(orderId, newStatus, token)
-      // Refetch the full order data after status update
       await fetchOrder()
     } catch (err) {
       console.error('Failed to update status:', err)
@@ -59,7 +60,8 @@ const AdminOrderDetail = () => {
     try {
       setUpdating(true)
       await orderService.updateOrderPayment(orderId, newStatus, token)
-      // Refetch the full order data after payment update
+      setPaymentStatus(newStatus)
+      // optional refetch if you want backend-confirmed data:
       await fetchOrder()
     } catch (err) {
       console.error('Failed to update payment status:', err)
@@ -95,12 +97,16 @@ const AdminOrderDetail = () => {
           <div>
             <h2 className="text-2xl font-bold text-gray-800">Order #{order.orderNumber}</h2>
             <p className="text-gray-600">Customer: {order.customer?.name ?? 'Guest'}</p>
-            <p className="text-gray-500 text-sm">Placed: {order.createdAt ? format(new Date(order.createdAt), 'dd MMM yyyy, HH:mm') : '—'}</p>
+            <p className="text-gray-500 text-sm">
+              Placed: {order.createdAt ? format(new Date(order.createdAt), 'dd MMM yyyy, HH:mm') : '—'}
+            </p>
           </div>
           <div className="text-right">
             <p className="text-sm text-gray-500">Table: {order.table?.number ?? '—'}</p>
             <p className="text-sm font-semibold mt-2">Status: {order.status}</p>
-            <p className="text-sm font-semibold mt-1">Payment: {order.payment?.status ?? 'pending'}</p>
+            <p className="text-sm font-semibold mt-1">
+              Payment: <span className="capitalize">{paymentStatus}</span>
+            </p>
           </div>
         </div>
 
@@ -113,7 +119,9 @@ const AdminOrderDetail = () => {
                   <p className="font-medium text-gray-800">{it.name}</p>
                   <p className="text-sm text-gray-500">Qty: {it.qty}</p>
                 </div>
-                <div className="text-gray-800 font-semibold">₹{(parseFloat(it.price) * it.qty).toFixed(2)}</div>
+                <div className="text-gray-800 font-semibold">
+                  ₹{(parseFloat(it.price) * it.qty).toFixed(2)}
+                </div>
               </li>
             ))}
           </ul>
@@ -121,11 +129,18 @@ const AdminOrderDetail = () => {
 
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-gray-600">Total: <span className="font-bold text-gray-800">₹{order.totals?.toFixed(2) ?? '0.00'}</span></p>
+            <p className="text-gray-600">
+              Total:{' '}
+              <span className="font-bold text-gray-800">
+                ₹{order.totals?.toFixed(2) ?? '0.00'}
+              </span>
+            </p>
+
+            {/* ✅ Payment Dropdown */}
             <div className="flex items-center gap-2 mt-2">
               <span className="text-sm text-gray-500">Payment:</span>
               <select
-                value={order.payment?.status ?? 'pending'}
+                value={paymentStatus}
                 onChange={(e) => handleUpdatePayment(e.target.value)}
                 disabled={updating}
                 className="px-2 py-1 text-sm border border-gray-300 rounded"
@@ -137,12 +152,14 @@ const AdminOrderDetail = () => {
               </select>
             </div>
           </div>
+
+          {/* ✅ Status Buttons */}
           <div className="flex items-center gap-2">
-            <button onClick={() => handleUpdateStatus('preparing')} disabled={updating} className="px-4 py-2 bg-blue-600 text-white rounded">Mark Preparing</button>
-            <button onClick={() => handleUpdateStatus('ready')} disabled={updating} className="px-4 py-2 bg-green-600 text-white rounded">Mark Ready</button>
-            <button onClick={() => handleUpdateStatus('served')} disabled={updating} className="px-4 py-2 bg-purple-600 text-white rounded">Mark Served</button>
-            <button onClick={() => handleUpdateStatus('completed')} disabled={updating} className="px-4 py-2 bg-gray-600 text-white rounded">Mark Completed</button>
-            <button onClick={() => handleUpdateStatus('canceled')} disabled={updating} className="px-4 py-2 bg-red-600 text-white rounded">Cancel Order</button>
+            <button onClick={() => handleUpdateStatus('preparing')} disabled={updating} className="px-4 py-2 bg-blue-600 text-white rounded">Preparing</button>
+            <button onClick={() => handleUpdateStatus('ready')} disabled={updating} className="px-4 py-2 bg-green-600 text-white rounded">Ready</button>
+            <button onClick={() => handleUpdateStatus('served')} disabled={updating} className="px-4 py-2 bg-purple-600 text-white rounded">Served</button>
+            <button onClick={() => handleUpdateStatus('completed')} disabled={updating} className="px-4 py-2 bg-gray-600 text-white rounded">Completed</button>
+            <button onClick={() => handleUpdateStatus('canceled')} disabled={updating} className="px-4 py-2 bg-red-600 text-white rounded">Cancel</button>
           </div>
         </div>
       </div>

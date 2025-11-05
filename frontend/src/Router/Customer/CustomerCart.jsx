@@ -38,14 +38,21 @@ const CustomerCart = () => {
     setLoading(true)
     setError(null)
     try {
-      // Backend expects each item to include menuItemId, name, price, qty
-      const orderData = {
-        items: items.map(i => ({ menuItemId: i.id, name: i.name, price: parseFloat(i.price), qty: parseInt(i.quantity, 10) || 1 })),
-        // include tableToken in meta so backend can resolve table if needed
+      // Build order payload matching backend expectations.
+      // Include name and price so server-side validation (which checks name/price) passes.
+      const orderPayload = {
+        items: items.map(i => ({
+          menuItemId: i.id,
+          name: i.name,
+          price: parseFloat(i.price),
+          quantity: parseInt(i.quantity, 10) || 1
+        })),
+        // include tableId only if a tableToken exists (tableToken may represent the table id or a resolver token)
+        ...(tableToken ? { tableId: tableToken } : {}),
         meta: tableToken ? { tableToken } : {}
       }
 
-  const created = await orderService.createOrder(orderData, token)
+      const created = await orderService.createOrder(orderPayload, token)
       dispatch(clearCart())
       try { window.alert('Order placed successfully') } catch (_) {}
       // navigate to order status page if created and has id

@@ -8,9 +8,15 @@ import {
   cancelOrder
 } from '../controllers/orderController.js';
 import { authenticate } from '../middleware/authMiddleware.js';
+import {
+  validateOrder,
+  validateOrderStatus,
+  validateOrderPayment,
+  handleValidationErrors
+} from '../middleware/valdation.js';
 import { requireOrderAccess, requireStaff, requireAdmin, requireOrderPlacement } from '../middleware/roleMiddleware.js';
-import { body, param, query } from 'express-validator';
-import { handleValidationErrors, validateOrder, validateOrderStatus } from '../utils/validationUtils.js';
+import { param } from 'express-validator';
+
 
 const router = express.Router();
 
@@ -50,14 +56,17 @@ router.patch('/:id/status',
 );
 
 // Update order payment status (staff or admin)
+// Update order payment status (staff or admin)
+// Update order payment status (staff or admin)
 router.patch('/:id/payment',
   authenticate,
   requireStaff,
-  [param('id').isMongoId().withMessage('Invalid order ID'),
-   body('status').isIn(['pending', 'paid', 'failed', 'refunded']).withMessage('Invalid payment status')],
+  validateOrderPayment,
   handleValidationErrors,
   updateOrderPayment
 );
+
+
 
 // Cancel order (customer who owns it or staff/admin)
 router.post('/:id/cancel',

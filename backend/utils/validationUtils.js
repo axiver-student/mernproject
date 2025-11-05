@@ -152,10 +152,9 @@ export const isValidTableNumber = (tableNumber) => {
  * @returns {boolean} True if status is valid
  */
 export const isValidOrderStatus = (status) => {
-  const validStatuses = ['placed', 'preparing', 'ready', 'served', 'canceled'];
+  const validStatuses = ['placed', 'preparing', 'ready', 'served', 'canceled', 'completed'];
   return validStatuses.includes(status);
 };
-
 /**
  * Validate user role
  * @param {string} role - User role to validate
@@ -334,8 +333,8 @@ export const validateOrder = [
  */
 export const validateOrderStatus = [
   body('status')
-    .isIn(['placed', 'preparing', 'ready', 'served', 'canceled'])
-    .withMessage('Status must be one of: placed, preparing, ready, served, canceled')
+  .isIn(['placed', 'preparing', 'ready', 'served', 'canceled', 'completed'])
+  .withMessage('Status must be one of: placed, preparing, ready, served, canceled, completed')
 ];
 
 /**
